@@ -1,0 +1,44 @@
+{# templates/admin/carcount_filter.html.twig #}
+{% extends 'base.html.twig' %}
+
+
+{% block body %}
+    <h1>CarCount Filter</h1>
+
+    {{ form_start(filterForm) }}
+    {{ form_row(filterForm.streetName) }}
+    {{ form_row(filterForm.user) }}
+    {{ form_row(filterForm.dateFrom) }}
+    {{ form_row(filterForm.dateTo) }}
+    <button class="btn btn-primary" type="submit">Filtern</button>
+    {{ form_end(filterForm) }}
+
+    <h2>Ergebnisse</h2>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Straßenname</th>
+            <th>Anzahl</th>
+            <th>Benutzer</th>
+            <th>Tatbestand</th>
+            <th>Erstellt am</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for carCount in results %}
+            <tr>
+                <td>{{ carCount.id }}</td>
+                <td>{{ carCount.streetName }}</td>
+                <td>{{ carCount.user }}</td>
+                <td>{{ carCount.tatbestand }}</td>
+                <td>{{ carCount.createAt|date('Y-m-d H:i') }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6">Keine Ergebnisse gefunden.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

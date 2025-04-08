@@ -1,0 +1,247 @@
+:root {
+    --ci-bgcolor: #ff6400;
+    --ci-text-color: #354052;
+    --nav-text-color: #fff;
+    --footer-bgcolor: #eee;
+}
+
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.content-container {
+    margin-top: 90px;
+    padding-bottom: 130px;
+}
+
+.navbar {
+    background-color: var(--ci-bgcolor);
+    color: var(--nav-text-color);
+}
+
+.navbar a {
+    color: var(--nav-text-color) !important;
+}
+
+.footer {
+    color: var(--ci-text-color);
+    position:  fixed;
+    bottom: 0;
+    background: var(--footer-bgcolor);
+    padding: 20px 0 0 0;
+    border-top: 1px solid #eee;
+    min-width: 100%;
+    /*height:60px;*/
+}
+
+.footer ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    justify-content: right;
+    /*align-items: center;*/
+    /*gap: 20px;*/
+}
+
+.footer ul li::after {
+    content: '|';
+    padding: 0 10px 0 10px;
+    color: #666;
+}
+
+.footer ul li:last-child::after {
+    content: '';
+}
+
+.footer img.logo {
+    width: 40px;
+    height: 40px;
+}
+
+.footer-brand {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.social-link {
+    color: #6c757d;
+    margin-right: 20px;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+.social-link:hover {
+    color: #0d6efd;
+}
+
+.footer-links a {
+    color: #666;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #0d6efd;
+}
+
+.copyright {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #666;
+}
+
+/*#map {*/
+/*    position: relative; !* Tooltip-Berechnung muss sich darauf beziehen. *!*/
+/*}*/
+
+.ol-tooltip {
+    position: absolute;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    color: #333;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    pointer-events: none; /* Tooltip versperrt keine anderen Interaktionen */
+}
+
+.streetMapLayer {
+    position: relative; width:100%;height:480px;overflow: hidden;
+}
+
+.streetMapContent {
+    position: relative; width:100%; background-color: #666; height:480px;margin: 0;padding: 0;
+}
+
+.streetMapMenu.mobile {
+    position: relative;width:100%; background-color: rgba(0,0,0,0.7); height:480px;transition: all 0.5s;
+}
+
+.streetMapMenu.desktop {
+    position: absolute; top: 0; right:-180px; width:200px; background-color: rgba(0,0,0,0.7); height:480px;transition: all 0.5s;
+}
+
+.streetMapMenu.desktop.active {
+    right:0;
+}
+
+ul.streetMapItems {
+    list-style: none; padding:0; margin:0;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+ul.streetMapItems li {
+    padding:10px;
+    margin:1px 1px 0 19px;
+    cursor: pointer;
+    background-color: #666;
+    color: #fff;
+    font-size: 0.7rem;
+    transition: all 0.5s;
+}
+
+.streetMapMenu.mobile li {
+    margin:1px 0 1px 0 !important;
+    max-width: 100% !important;
+}
+
+ul.streetMapItems li:hover {
+    color: #81e616;
+}
+
+ul.streetMapItems li.active {
+    background-color:#81e616;
+    color: #000 !important;
+    font-weight: bold;
+}
+
+ul.streetMapItems li .tatbestand-list {
+    display: none;
+}
+
+ul.streetMapItems li .tatbestand-list > div {
+    border-top:1px solid #333;
+    color: #000;
+}
+
+ul.streetMapItems li.active .tatbestand-list {
+    display: block;
+}
+
+/** tatbestand cache **/
+.tatbestand-wrapper {
+    display: none;
+}
+
+.tatbestand-wrapper.active {
+    display: block;
+}
+
+.tatbestand-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #666;
+    padding: 2px;
+    border-radius: 7px;
+    margin-bottom: 3px;
+    gap: 5px;
+}
+
+.tatbestand-box input,
+.tatbestand-box select,
+.tatbestand-box button {
+    height: 30px;
+}
+
+.tatbestand-box button {
+    font-weight: bold;
+}
+
+.tatbestand-box button.btn-count{
+    min-width: 30px;
+}
+
+.tatbestand-box button.btn-count:first-child {
+    border :0;
+    border-radius: 7px 0 0 7px;
+}
+
+.tatbestand-box button.btn-count:last-child {
+    border :0;
+    border-radius: 0 7px 7px 0;
+}
+
+.tatbestand-box .tatbestand-text {
+    min-width: calc(100% - 160px);
+    border-top-left-radius: 7px;
+    border-bottom-left-radius: 7px;
+}
+
+.tatbestand-box .tatbestand-count {
+    width:40px;
+    text-align: center;
+}
+
+.bg-opacity-0 {
+    opacity: 0;
+}
+
+.no-spin::-webkit-inner-spin-button,
+.no-spin::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.no-spin {
+  -moz-appearance: textfield;
+}

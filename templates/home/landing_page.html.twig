@@ -1,0 +1,172 @@
+{% set iconSvgUrl = getSvgUrl(asset('assets/images/flag-filled.svg'), '#fff') %}
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="row mb-2"><div class="col-12"><h3>Falschparkerkarte / <span class="text-success">München</span></h3></div></div>
+    <div class="row pb-0 mb-0">
+        <div class="col-12 pb-0 mb-0">
+            {{ form_start(filterForm, {'attr': {'class': 'pb-0 mb-0'}}) }}
+            <table class="table table-dark pb-0 mb-0">
+                <thead class="mobile-hidden">
+                <tr>
+                    <th scope="col" class="text-center p-0 pt-1">{{ form_label(filterForm.street_name, null, { 'label_attr': { 'class': 'mb-0' } }) }}</th>
+                    <th scope="col" class="text-center p-0 pt-1">{{ form_label(filterForm.dateStart, null, { 'label_attr': { 'class': 'mb-0' } }) }}</th>
+                    <th scope="col" class="text-center p-0 pt-1">{{ form_label(filterForm.dateEnd, null, { 'label_attr': { 'class': 'mb-0' } }) }}</th>
+                    <th scope="col" class="text-center p-0 pt-1">{{ form_label(filterForm.tatbestand, null, { 'label_attr': { 'class': 'mb-0' } }) }}</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                    <tr class="d-md-table-row d-flex flex-column flex-md-row">
+                        <td class="ps-1 pe-1">
+                            {{ form_label(filterForm.street_name, null, { 'label_attr': { 'class': 'form-label d-md-none text-center' } }) }}
+                            {{ form_widget(filterForm.street_name) }}
+                        </td>
+                        <td class="ps-1 pe-1">
+                            {{ form_label(filterForm.dateStart, null, { 'label_attr': { 'class': 'form-label d-md-none text-center' } }) }}
+                            {{ form_widget(filterForm.dateStart) }}
+                        </td>
+                        <td class="ps-1 pe-1">
+                            {{ form_label(filterForm.dateEnd, null, { 'label_attr': { 'class': 'form-label d-md-none text-center' } }) }}
+                            {{ form_widget(filterForm.dateEnd) }}
+                        </td>
+                        <td class="ps-1 pe-1">
+                            {{ form_label(filterForm.tatbestand, null, { 'label_attr': { 'class': 'form-label d-md-none text-center' } }) }}
+                            {{ form_widget(filterForm.tatbestand) }}
+                        </td>
+                        <td class="d-flex gap-4 gap-md-2 justify-content-center justify-content-md-end">
+                            {{ form_widget(filterForm.submit) }}
+                            {{ form_widget(filterForm.btnReset) }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            {{ form_end(filterForm) }}
+        </div>
+        <div class="col-12">
+            <div class="streetMapLayer">
+                <div id="map" class="streetMapContent"></div>
+                <div class="streetMapMenu desktop active d-none d-md-block">
+                    <ul class="streetMapItems">
+                        {% for item in carCounts %}
+                            <li class="streetMapItem"
+                                data-item-config="{{ item.streetName ~ '|' ~ item.latitude ~ '|' ~ item.longitude }}"
+                                data-icon-source="{{ iconSvgUrl }}"
+                                data-icon-id="{{ loop.index }}"
+                                data-created-at="{{ item.createAt | date('d.m.y') }}">
+                                <b>{{ item.streetName }}</b><br>
+                                {{ item.streetDetails.suburb }}
+                                <div class="tatbestand-list p-0 m-0">
+                                    {% for detail in item.details %}
+                                    <div class="mt-1 mb-1 pt-3">
+                                        Datum: {{ detail.createAt | date('d.m.y') }}
+                                        {% for tatbestand in detail.details %}
+                                            <div class="pt-3">
+                                                {{ tatbestand.tatbestand }}<br>Anzahl: {{ tatbestand.count }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="streetMapMenu mobile d-md-none">
+                <ul class="streetMapItems">
+                    {% for item in carCounts %}
+                        <li class="streetMapItem"
+                            data-item-config="{{ item.streetName ~ '|' ~ item.latitude ~ '|' ~ item.longitude }}"
+                            data-icon-source="{{ iconSvgUrl }}"
+                            data-icon-id="{{ loop.index }}"
+                            data-created-at="{{ item.createAt | date('d.m.y') }}">
+                            <b>{{ item.streetName }}</b><br>
+                            {{ item.streetDetails.suburb }}
+                            <div class="tatbestand-list p-0 m-0">
+                                {% for detail in item.details %}
+                                    <div class="mt-1 mb-1 pt-3">
+                                        Datum: {{ detail.createAt | date('d.m.y') }}
+                                        {% for tatbestand in detail.details %}
+                                            <div class="pt-3">
+                                                {{ tatbestand.tatbestand }}<br>Anzahl: {{ tatbestand.count }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function()
+        {
+            const streetMapMenu = document.querySelector('.streetMapMenu');
+            streetMapMenu.addEventListener('click', () => {
+                if (streetMapMenu.classList.contains('active')) {
+                    streetMapMenu.classList.remove('active');
+                } else {
+                    streetMapMenu.classList.add('active');
+                }
+            });
+            // Init OpenStreetMap
+            const StreetMap = new OpenMap({
+                domId: 'map',
+                cityCoords: [11.576124, 48.137154],
+                iconMenuEvent: {'click': (data) => {
+                        const device = /Mobi|Android/i.test(navigator.userAgent) ? 'mobile' : 'desktop';
+                        const menu = document.querySelector('.streetMapMenu.' + device);
+                        const item = menu.querySelector('.streetMapItem[data-icon-id="' + data.iconId + '"]');
+                        if (item) {
+                            item.click();
+                        }
+                    }},
+            });
+            StreetMap.setTooltip();
+            // Count button event
+            const streetMapItems = document.querySelectorAll('.streetMapItem');
+            [...streetMapItems].map((item) => {
+                const conf = item.dataset.itemConfig.split('|');
+                StreetMap.setMapIcon({
+                    streetName: conf[0],
+                    lat: conf[1],
+                    lon: conf[2],
+                    iconUrl: item.dataset.iconSource,
+                    iconId: item.dataset.iconId,
+                    createdAt: item.dataset.createdAt,
+                    zoom: 15,
+                });
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const lastActive = document.querySelector('.streetMapItem.active');
+                    if (lastActive) {
+                        lastActive.classList.remove('active');
+                    }
+                    item.classList.add('active');
+                    StreetMap.setMapIconHighlight({
+                        lat: conf[1],
+                        lon: conf[2],
+                        iconId: item.dataset.iconId,
+                        zoom: 16,
+                    });
+                });
+            });
+
+            const btnRefreshForm = document.querySelector('.btn-refresh');
+            btnRefreshForm.addEventListener('click', () => {
+                const form = btnRefreshForm.closest('form');
+                const formElements = form.querySelectorAll('select, input[type="date"]');
+                formElements.forEach(element => {
+                    if (element.nodeName === 'SELECT') {
+                        element.selectedIndex = 0;
+                    } else if (element.type === 'date') {
+                        element.value = '';
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}

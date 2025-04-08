@@ -1,0 +1,10 @@
+{% set flashes = app.flashes %}
+{% if flashes is not empty %}
+    {% for label, messages in flashes %}
+        <div class="alert alert-{{ label }}">
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
+{% endif %}

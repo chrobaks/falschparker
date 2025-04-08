@@ -1,0 +1,84 @@
+{% set iconSvgUrl = getSvgUrl(asset('assets/images/flag-filled.svg'), '#fff') %}
+
+{% extends 'base.html.twig' %}
+{% block body %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div id="map" style="width: 100%; height: 400px;"></div>
+    </div>
+</div>
+{{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+<div class="row">
+    <div class="col-12 col-lg-4 mb-2">
+        {{ form_label(form.street_name) }}
+        {{ form_widget(form.street_name) }}
+    </div>
+</div>
+<div class="row">
+    <div class="col-12 col-lg-4 mb-2">
+        {{ form_label(form.count) }}
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-success btn-sm btn-count me-1" type="button">-</button>
+            {{ form_widget(form.count) }}
+            <button class="btn btn-success btn-sm btn-count ms-1" type="button">+</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4 mb-4">
+            {{ form_label(form.tatbestand) }}
+            {{ form_widget(form.tatbestand) }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 col-lg-4 mb-4">
+            {{ form_widget(form.cache) }}
+        </div>
+    </div>
+    <div class="row">
+        <div id="tatbestand-wrapper" class="tatbestand-wrapper active"></div>
+    </div>
+</div>
+{{ form_end(form) }}
+<script>
+
+document.addEventListener("DOMContentLoaded", function()
+{
+    const selectors = {
+        tatbestandWrapper: 'tatbestand-wrapper',
+        tatbestandSelect: 'carcount_form_tatbestand',
+        tatbestandCount: 'carcount_form_count',
+        inputCounts: 'carcount_form_counts',
+        count: 'carcount_form_count',
+        btnCache: 'carcount_form_cache',
+        streetInputId: 'carcount_form_street_name',
+        lonInputId: 'carcount_form_longitude',
+        latInputId: 'carcount_form_latitude',
+    };
+
+    const Cache = new TatbestandCache({selector: selectors});
+
+    // Init OpenStreetMap
+    const StreetMap = new OpenMap({
+        domId: 'map',
+        cityCoords: [11.576124, 48.137154],
+        iconUrl: '{{ iconSvgUrl }}',
+        streetInputId: selectors.streetInputId,
+        lonInputId: selectors.lonInputId,
+        latInputId: selectors.latInputId,
+        setEditMode: true,
+    });
+
+    // Count button event
+    const btnCountList = document.querySelectorAll('.btn-count');
+    [...btnCountList].map((btn, index) => {
+        btn.addEventListener('click', () => {
+            let count = document.getElementById(selectors.tatbestandCount);
+            let countVal = count.value*1;
+            if (index === 0 && countVal > 0 || index === 1 ) {
+                count.value = (index === 0) ? countVal - 1 : countVal + 1;
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

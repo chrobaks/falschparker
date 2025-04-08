@@ -1,0 +1,11 @@
+{% block tatbestand_count_entry %}
+    <div class="tatbestand-box">
+        {{ form_widget(form.tatbestand) }}
+        <div class="d-flex justify-content-between">
+            <button class="btn btn-success btn-sm btn-count " type="button">-</button>
+            {{ form_widget(form.count) }}
+            <button class="btn btn-success btn-sm btn-count " type="button">+</button>
+        </div>
+        <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove();"><i class="bi bi-trash fw-bold"></i></button>
+    </div>
+{% endblock %}

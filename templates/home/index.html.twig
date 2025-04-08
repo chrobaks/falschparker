@@ -1,0 +1,264 @@
+{% set iconSvgUrl = getSvgUrl(asset('assets/images/flag-filled.svg'), '#fff') %}
+{% extends 'base.html.twig' %}
+{% block body %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="streetMapLayer">
+            <div id="map" class="streetMapContent"></div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div id="tatbestand-prototype" class="d-none">
+        {% include '@form/tatbestand_count.html.twig' with {'form': form.tatbestandCounts.vars.prototype} %}
+    </div>
+    <div class="col-12 col-lg-4 mb-2">
+            {{ form_start(form) }}
+        <div>
+            <div class="d-none">
+                {{ form_row(form.latitude) }}
+                {{ form_row(form.longitude) }}
+            </div>
+
+            {{ form_row(form.street_name) }}
+            {{ form_row(form.street_name_options) }}
+        </div>
+        <div id="tatbestand-container"></div>
+        <div class="mt-1 mb-2">
+            <button class="btn btn-secondary" type="button" id="add-tatbestand">Tatbestand hinzufügen</button>
+        </div>
+        {% include 'default/flash.html.twig' %}
+        {{ form_row(form.save) }}
+    {{ form_end(form) }}
+    </div>
+</div>
+
+<script>
+class AppModal
+{
+    static init (domId) {
+        this.modal = new window.Modal(document.getElementById(domId));
+        this.modalContainer = document.getElementById(domId);
+        this.modalBody = this.modalContainer.querySelector('.modal-body');
+        this.btnList = {
+            save: this.modalContainer.querySelector('.btnSave'),
+            close: this.modalContainer.querySelector('.btnClose'),
+        }
+    }
+
+    static show (settings)
+    {
+        this.btnDisplay(settings.type);
+        this.renderModalBody(settings.content);
+        this.modal.show();
+    }
+
+    static btnDisplay (type)
+    {
+        if (type === 'info') {
+            this.btnList.save.style.display = 'none';
+        } else {
+            this.btnList.save.style.display = 'block';
+        }
+    }
+
+    static renderModalBody (html)
+    {
+        if (typeof this.modalBody.innerHTML !== 'undefined') {
+            this.modalBody.innerHTML = html;
+        }
+    }
+}
+class FormCollection
+{
+    StreetMap;
+    selector;
+    autoIndex;
+    template;
+    container;
+    addBtn;
+
+    constructor(config)
+    {
+        this.StreetMap = config.StreetMap;
+        this.selector = config.selector;
+
+        if (this.setDomElements()) {
+            this.setEventAdd();
+            this.setEventSubmit();
+            this.setEventStreetSelect();
+        }
+    }
+
+    setDomElements ()
+    {
+        try {
+            this.form = document.forms[this.selector.form];
+            this.submitButton = this.form.querySelector("button[type='submit']");
+            this.template = document.getElementById(this.selector.template);
+            this.container = document.getElementById(this.selector.container);
+            this.addBtn = document.getElementById(this.selector.addBtn);
+            this.autoIndex = 0;
+        } catch (e) {
+            console.error(e);
+            return false;
+        }
+
+        return true;
+    }
+
+    setEventStreetSelect ()
+    {
+        const selects = this.form.querySelector('select[name="carcount_form[street_name_options]"]');
+            selects.addEventListener('change', (e) => {
+                try {
+                    const dataConfig = e.target.value.split('|');
+                    this.StreetMap.setStreetIcon(dataConfig[1], dataConfig[2]);
+                    selects.selectedIndex = 0;
+                } catch (e) {
+                    console.error(e);
+                }
+            });
+    }
+
+    setEventAdd ()
+    {
+        this.addBtn.addEventListener('click', () => {
+            this.addRow();
+            const selects = [... this.container.querySelectorAll('select.tatbestand-text')];
+            const lastSelect = selects.slice(-1)[0];
+            lastSelect.addEventListener('change', (e) => {
+                if (e.target.value !== '') {
+                    if (this.checkOptionIsNotUnique(lastSelect, e.target.value)) {
+                        const selectedText = e.target.options[e.target.selectedIndex].text;
+                        lastSelect.selectedIndex = 0;
+                        AppModal.show({
+                            type: 'info',
+                            content: `<p class="text-center">Du hast diesen Tatbestand schon ausgewählt,<br>bitte benutze die Zählung im bestehenden Tatbestand:<br><b>${selectedText}</b></p>`,
+                        });
+                    }
+                }
+            });
+        });
+    }
+    setEventSubmit ()
+    {
+        this.submitButton.addEventListener('click', event =>
+        {
+            const formFields = this.form.querySelectorAll("select, input"); // Alle Select-Felder im Formular
+            const selectLength = this.form.querySelectorAll("select").length;
+            let isEmpty = false;
+            let isEmptyTatbestand = false;
+            let errorMsg = '<p class="text-center text-danger">Es wurden leere Formularfelder gefunden!</p>';
+            const errorArgs = [];
+
+            formFields.forEach(element => {
+                if (!element.value && element.required) {
+                    errorArgs.push(element.name);
+                    isEmpty = true;
+                    if (element.classList.contains('tatbestand-text')) {
+                        isEmptyTatbestand = true;
+                    }
+                    element.classList.add("border", "border-danger");
+                } else {
+                    element.classList.remove("border", "border-danger");
+                }
+            });
+
+
+            console.log('submit',this.form.querySelector("input#carcount_form_street_details"));
+            if (isEmpty || selectLength === 0) {
+                console.log('errors:', errorArgs);
+                if (!selectLength) {
+                    errorMsg += `<p class="text-center text-danger">Du hast noch keinen Tatbestand gewählt und gezählt!</p>`;
+                }
+                if (isEmptyTatbestand) {
+                    errorMsg += `<p class="text-center text-danger">Es wurden leere Auswahlfelder für Tatbestand gefunden. Bitte wähle einen Tatbestand oder lösche das leere Auswahlfeld mit dem Löschen-Button!</p>`;
+                }
+                event.preventDefault(); // Stoppt das Absenden
+                AppModal.show({
+                    type: 'info',
+                    content: errorMsg,
+                });
+            }
+        });
+    }
+
+    checkOptionIsNotUnique (actualSelect,value)
+    {
+        const selects = this.container.querySelectorAll('select.tatbestand-text');
+
+        return [...selects].some(select => select !== actualSelect && select.value === value);
+    }
+
+    addRow ()
+    {
+        const html = this.template.innerHTML.replace(/__name__/g, this.getAutoIndex());
+        this.container.insertAdjacentHTML('beforeend', html);
+
+        const lastBox = [... this.container.querySelectorAll('.tatbestand-box')].slice(-1)[0];
+        lastBox.querySelector('select').selectedIndex = 0;
+
+        const btnCountList = lastBox.querySelectorAll('.btn-count');
+        const countInput = lastBox.querySelector('.' + this.selector.tatbestandCount);
+
+        [...btnCountList].map((btn, index) => {
+            btn.addEventListener('click', () => {
+                let countVal = countInput.value*1;
+                if (index === 0 && countVal > 0 || index === 1 ) {
+                    countInput.value = (index === 0) ? countVal - 1 : countVal + 1;
+                }
+            });
+        });
+    }
+
+    getAutoIndex ()
+    {
+        return this.autoIndex++;
+    }
+}
+document.addEventListener("DOMContentLoaded", function()
+{
+    AppModal.init('appModal');
+
+
+    const selectors = {
+        tatbestandWrapper: 'tatbestand-wrapper',
+        tatbestandSelect: 'carcount_form_tatbestand',
+        tatbestandCount: 'carcount_form_count',
+        inputCounts: 'carcount_form_counts',
+        count: 'carcount_form_count',
+        btnCache: 'carcount_form_cache',
+        streetInputId: 'carcount_form_street_name',
+        streetDetails: 'carcount_form_street_details',
+        lonInputId: 'carcount_form_longitude',
+        latInputId: 'carcount_form_latitude',
+    };
+
+    // Init OpenStreetMap
+    const StreetMap = new OpenMap({
+        domId: 'map',
+        cityCoords: [11.576124, 48.137154],
+        iconUrl: '{{ iconSvgUrl }}',
+        streetInputId: selectors.streetInputId,
+        streetDetails: selectors.streetDetails,
+        lonInputId: selectors.lonInputId,
+        latInputId: selectors.latInputId,
+        setEditMode: true,
+    });
+
+    const FormCollectionHandler = new FormCollection({
+        selector: {
+            form: 'carcount_form',
+            container: 'tatbestand-container',
+            template: 'tatbestand-prototype',
+            addBtn: 'add-tatbestand',
+            tatbestandCount: 'tatbestand-count',
+        },
+        StreetMap: {
+            setStreetIcon: StreetMap.setStreetIcon.bind(StreetMap),
+        }
+    });
+});
+</script>
+{% endblock %}

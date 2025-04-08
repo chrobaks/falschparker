@@ -1,0 +1,60 @@
+{# templates/admin/carcount_pdf.html.twig #}
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        h2 {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<h2>Car Count Report</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Benutzer</th>
+        <th>Straße</th>
+        <th>Latitude</th>
+        <th>Longitude</th>
+        <th>Tatbestand</th>
+        <th>Datum</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for carCount in carCounts %}
+        <tr>
+            <td>{{ carCount.id }}</td>
+            <td>{{ carCount.user.email }}</td>
+            <td>{{ carCount.streetName }}</td>
+            <td>{{ carCount.latitude }}</td>
+            <td>{{ carCount.longitude }}</td>
+            <td>
+                {% for tatbestandCount in carCount.tatbestandCounts %}
+                    {{ tatbestandCount.tatbestand.text }} ({{ tatbestandCount.count }})<br>
+                {% endfor %}
+            </td>
+            <td>{{ carCount.createAt|date('d.m.Y H:i') }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

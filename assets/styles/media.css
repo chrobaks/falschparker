@@ -1,0 +1,24 @@
+/* Entfernt Standard-Padding der Tabellenzellen im Mobile-Modus */
+@media (max-width: 768px) {
+    .table td {
+        padding: 0.5rem 0;
+    }
+    .table td label {
+        font-weight: bold;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+}
+@media (max-width: 575px) {
+    thead.mobile-hidden {
+        visibility: hidden; /* Unsichtbar auf mobilen Geräten, aber bleibt im Layout */
+        position: absolute; /* Optional, falls Platz eingespart werden soll */
+    }
+
+    .streetMapLayer,
+    .streetMapContent,
+    .streetMapMenu.mobile,
+    .streetMapMenu.mobile ul.streetMapItems {
+        max-height: 280px;
+    }
+}

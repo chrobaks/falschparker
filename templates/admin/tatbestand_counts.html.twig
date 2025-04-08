@@ -1,0 +1,18 @@
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Beschreibung</th>
+            <th>Anzahl</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tatbestandCount in field.value %}
+            <tr>
+                <td>{{ tatbestandCount.id }}</td>
+                <td>{{ tatbestandCount.tatbestand.text }}</td>
+                <td>{{ tatbestandCount.count }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

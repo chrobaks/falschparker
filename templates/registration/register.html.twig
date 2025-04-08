@@ -1,0 +1,37 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+
+{% block body %}
+    {% for flash_error in app.flashes('verify_email_error') %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
+            </div>
+        </div>
+
+    {% endfor %}
+
+    <div class="row mb-4">
+        <div class="col-12 col-md-4">
+            <h3>Bei FalschParker registrieren</h3>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-12 col-md-4">
+            {% if regStatus == 0 %}
+            {{ form_errors(registrationForm) }}
+            {{ form_start(registrationForm, {'attr': {'novalidate': 'novalidate'}}) }}
+            {{ form_widget(registrationForm) }}
+            {{ form_end(registrationForm) }}
+            {% else %}
+            <div class="m-auto">
+                <div class="alert alert-success" role="alert">
+                    <p>Deine Registrierung war erfolgreich!</p>
+                    <p>Bitte bestätige deine Emailadresse mit dem Link, den wir dir geschickt haben.</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
